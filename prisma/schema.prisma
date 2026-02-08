@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Agent {
+  id          String   @id @default(cuid())
+  contractId  Int      @unique
+  owner       String
+  name        String
+  description String   @db.Text
+  agentType   String   // code, seo, content, data
+  price       Decimal  @db.Decimal(18, 6)
+  earnings    Decimal  @default(0) @db.Decimal(18, 6)
+  active      Boolean  @default(true)
+  metadata    Json?
+  totalSales  Int      @default(0)
+  rating      Decimal  @default(0) @db.Decimal(3, 2)
+  ratingCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions Transaction[]
+
+  @@index([owner])
+  @@index([agentType])
+  @@index([active])
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  agentId   String
+  buyer     String
+  amount    Decimal  @db.Decimal(18, 6)
+  txHash    String   @unique
+  status    String   @default("pending") // pending, completed, failed
+  result    Json?
+  prompt    String?  @db.Text
+  response  String?  @db.Text
+  timestamp DateTime @default(now())
+
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@index([buyer])
+  @@index([txHash])
+  @@index([status])
+  @@index([timestamp])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  address   String   @unique
+  username  String?
+  email     String?  @unique
+  bio       String?  @db.Text
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([address])
+}
+
+model SystemStats {
+  id             String   @id @default(cuid())
+  totalAgents    Int      @default(0)
+  totalUsers     Int      @default(0)
+  totalVolume    Decimal  @default(0) @db.Decimal(18, 6)
+  totalBuyback   Decimal  @default(0) @db.Decimal(18, 6)
+  totalTreasury  Decimal  @default(0) @db.Decimal(18, 6)
+  updatedAt      DateTime @updatedAt
+}

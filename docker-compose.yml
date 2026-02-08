@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: agentmarket-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: agentmarket
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: agentmarket-api
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/agentmarket
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FRONTEND_URL=http://localhost:3000
+      - NODE_ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+    command: pnpm run dev
+
+  # Frontend (Optional - usually run locally for development)
+  # web:
+  #   build:
+  #     context: ./apps/web
+  #     dockerfile: Dockerfile
+  #   container_name: agentmarket-web
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=http://localhost:3001
+  #     - NEXT_PUBLIC_MARKETPLACE_ADDRESS=${NEXT_PUBLIC_MARKETPLACE_ADDRESS}
+  #     - NEXT_PUBLIC_TOKEN_ADDRESS=${NEXT_PUBLIC_TOKEN_ADDRESS}
+  #     - NEXT_PUBLIC_CHAIN_ID=11155111
+  #     - NEXT_PUBLIC_WALLETCONNECT_ID=${NEXT_PUBLIC_WALLETCONNECT_ID}
+  #   depends_on:
+  #     - api
+  #   volumes:
+  #     - ./apps/web:/app
+  #     - /app/node_modules
+  #     - /app/.next
+  #   command: pnpm run dev
+
+volumes:
+  postgres_data:
+    driver: local
