@@ -276,9 +276,3 @@ pnpm build
 ```
 
 ---
-
-**Good luck with your submission! 🎊**
-
-**Built for SURGE × Moltbook Hackathon**
-
-**#TokenizeTheAgentInternet**

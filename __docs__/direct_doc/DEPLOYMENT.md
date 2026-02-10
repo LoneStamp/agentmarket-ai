@@ -401,8 +401,6 @@ Once all items are checked:
    - Add features
    - Scale as needed
 
-**Congratulations on your deployment!** 🚀
-
 ---
 
 Built for SURGE × Moltbook Hackathon
