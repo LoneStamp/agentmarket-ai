@@ -1,3 +1,4 @@
 node_modules
 __docs__/claude/
 backup
+.env.local
